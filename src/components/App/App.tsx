@@ -28,24 +28,27 @@ function App() {
 
   return (
     <div className="app">
-      <section className="chat-window" ref={bottomRef}>
-        <div className="chat-window__chat" >
-            {chatWindow.map( (el, index) =>
-            (
-              <div className={el.sender.toLowerCase() + ' chat__message'} key={index}>
-                {
-                el.message.split('\n').map( (elem, index) =>
-                (
-                  <div className={cursor ? 'fragment' : 'fragment fragment__blink'} key={index}>
-                    { elem }
-                  </div>
-                ))}
-              </div>
-            )
-          )}
+      <section className="chat-window">
+        <div className="chat-window_container" ref={bottomRef}>
+          <div className="chat-window__chat" >
+              {chatWindow.map( (el, index) =>
+              (
+                <div className={el.sender.toLowerCase() + ' chat__message'} key={index}>
+                  {
+                  el.message.split('\n').map( (elem, index) =>
+                  (
+                    <div className={cursor ? 'fragment' : 'fragment fragment__blink'} key={index}>
+                      { elem }
+                    </div>
+                  ))}
+                </div>
+              )
+            )}
+          </div>
         </div>
+        <div className="bottom"></div>
       </section>
-      <div className="prompt">
+      <section className="prompt">
         <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
           setUserInput(event.currentTarget.value);
         }} />
@@ -54,7 +57,11 @@ function App() {
             sender: 'Human',
             message: userInput
           }
-          setChatWindow(prev => [...prev, newPhrase])
+          const waitingForAi: ILogMessage = {
+            sender: 'Assistant',
+            message: '',
+          }
+          setChatWindow(prev => [...prev, newPhrase, waitingForAi])
           const message: IMessage = {
             event: messageEvent.prompt,
             payload: newPhrase.message,
@@ -62,7 +69,7 @@ function App() {
           client.ws.send(JSON.stringify(message));
           setUserInput('');
         }}>Send message</button>
-      </div>
+      </section>
     </div>
   );
 }
