@@ -1,6 +1,6 @@
 import { wsClient } from "./ws_client";
 
-export enum wsEvent {
+export enum messageEvent {
   restore = 'restoreSession',
   prompt = 'prompt',
   promptAnswer = 'promptAnswer',
@@ -8,12 +8,17 @@ export enum wsEvent {
 }
 
 export interface IMessage {
-  event: wsEvent;
+  event: messageEvent;
   payload: ISession | string;
   type?: 'text_stream' | 'stream_end'
 }
 
+export interface ILogMessage {
+  sender: 'Assistant' | 'Human',
+  message: string;
+}
+
 export interface ISession {
   userId: string,
-  sessionLog: string[],
+  sessionLog: ILogMessage[],
 }

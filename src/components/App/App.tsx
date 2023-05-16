@@ -1,47 +1,63 @@
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState, useRef} from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { wsClient } from '../../ws/ws_client';
-import { IMessage, wsEvent } from '../../ws/types';
+import { ILogMessage, IMessage, messageEvent } from '../../ws/types';
 
-let ind = 0;
 
 function App() {
   const [userInput, setUserInput] = useState('');
-  const [chatWindow, setChatWindow] = useState<string[]>([]);
-  const client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow);
+  const [chatWindow, setChatWindow] = useState<ILogMessage[]>([]);
+  const [cursor, setCursor] = useState<boolean>(false)
+  const client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor);
+  const bottomRef = useRef<null | HTMLDivElement>(null);
+
+  window.HTMLElement.prototype.scrollIntoView = () => {};
+
+  useEffect(() => {
+    bottomRef.current?.scroll({
+          top: bottomRef.current?.scrollHeight,
+          behavior: 'smooth',
+      });
+
+  }, [chatWindow]);
+
+  useEffect(() => {
+    setChatWindow(prev => [...prev])
+  }, [cursor])
 
   return (
-    <div className="App">
-      <div className="chat-window">
-        {chatWindow.map( (el, index) => {
-          let phrase = '';
-          let name = '';
-          if(el.includes('### Assistant:')) {
-            phrase = el.replace('### Assistant:', '');
-            name = 'assist'
-          } else {
-            phrase = el.replace('### Human:', '');
-            name = 'human'
-          }
-
-          return (
-            <div className={name} key={index}>
-              {phrase}
-            </div>
-          )
-        })}
-      </div>
-      <div className='prompt-input'>
-        <input type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
+    <div className="app">
+      <section className="chat-window" ref={bottomRef}>
+        <div className="chat-window__chat" >
+            {chatWindow.map( (el, index) =>
+            (
+              <div className={el.sender.toLowerCase() + ' chat__message'} key={index}>
+                {
+                el.message.split('\n').map( (elem, index) =>
+                (
+                  <div className={cursor ? 'fragment' : 'fragment fragment__blink'} key={index}>
+                    { elem }
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      </section>
+      <div className="prompt">
+        <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
           setUserInput(event.currentTarget.value);
         }} />
-        <button type="button" onClick={ (event: FormEvent<HTMLButtonElement>) => {
-          const newPhrase = '\n### Human:\n' + userInput
+        <button className="prompt__submit" type="button" onClick={ (event: FormEvent<HTMLButtonElement>) => {
+          const newPhrase: ILogMessage = {
+            sender: 'Human',
+            message: userInput
+          }
           setChatWindow(prev => [...prev, newPhrase])
           const message: IMessage = {
-            event: wsEvent.prompt,
-            payload: 'Continue the dialogue properly.' + chatWindow.join('') + newPhrase + '/n ### Assistant:\n',
+            event: messageEvent.prompt,
+            payload: newPhrase.message,
           };
           client.ws.send(JSON.stringify(message));
           setUserInput('');

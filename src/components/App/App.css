@@ -1,23 +1,151 @@
-.App {
+:root {
+  --dark-blue: #026694;
+  --very-light: #fff;
+  --light: #ffffff;
+  --ai-cursor: "█";
+  --message-shadow: hsl(209, 31%, 69%) 0 0 3px;
+  --chat-border: 1px solid hsl(185, 13%, 81%);
+}
+
+.app {
   text-align: left;
+  background: linear-gradient(215deg, #e6fafd 0%, #d8edff 50%, #ebe9ff 100%);
+  font: 12px/16px "Arial";
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.assist {
-  width: 40%;
-  left: 5%;
+.chat-window {
+  width: 70%;
+  max-width: 1100px;
   position: relative;
-  border: 1px solid #aaa;
-  background: #ccc;
-  border-radius: 10px;
-  padding: 10px;
+  align-self: center;
+  flex: 2 1 70vh;
+  margin-top: 5vh;
+  overflow-y: scroll;
+  background: var(--light);
+  border: var(--chat-border);
+  border-radius: 16px;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+  scrollbar-color: var(--dark-blue) var(--light);
+  overflow-y: overlay;
 }
 
-.human {
-  width: 40%;
-  left: 55%;
-  position: relative;
-  border: 1px solid #ccc;
-  background: #eee;
-  border-radius: 10px;
+.chat-window::-webkit-scrollbar {
+  width: 5px;
+  display: none;
+}
+
+.chat-window:hover::-webkit-scrollbar {
+  display: block;
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+  background: var(--dark-blue);
+  border-radius: 4px;
+}
+
+.chat-window__chat {
+  display: flex;
+  flex-direction: column;
+  padding: 2%;
+  min-height: 100%;
+}
+
+.chat__message {
+  max-width: 48%;
+  width: fit-content;
+  block-size: fit-content;
+  box-shadow: var(--message-shadow);
+}
+
+.chat__message.assistant {
+  background: var(--light);
+  border-radius: 0 8px 8px 8px;
   padding: 10px;
+  color: #444;
+  align-self: flex-start;
+}
+
+.chat__message.human {
+  background: var(--dark-blue);
+  border-radius: 8px 0 8px 8px;
+  padding: 10px;
+  color: #fff;
+  align-self: flex-end;
+}
+
+.chat__message .fragment {
+  padding: 2px 0;
+}
+
+.assistant:last-of-type .fragment:last-of-type::after {
+  content: var(--ai-cursor);
+  color: var(--dark-blue);
+}
+
+.assistant:last-of-type .fragment.fragment__blink:last-of-type::after {
+  animation: pulsate 0.93s linear infinite;
+}
+
+@keyframes pulsate {
+  0% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 0;
+  }
+  56% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.prompt {
+  flex: 1 1 3vh;
+  background: var(--light);
+  border: var(--chat-border);
+  border-radius: 16px;
+  width: 70%;
+  max-width: 1100px;
+  position: relative;
+  align-self: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+}
+
+.prompt * {
+  border-radius: 4px;
+  margin: 16px;
+  border: var(--chat-border);
+  transition: all 0.3s;
+}
+
+.prompt__text-field {
+  flex: 8 1 60%;
+  padding: 4px;
+  text-align: right;
+}
+
+.prompt__text-field:focus,
+.prompt__text-field:hover {
+  border: 1px solid var(--dark-blue);
+}
+
+.prompt__submit {
+  flex: 2 1 20%;
+  margin: 16px;
+  background: var(--dark-blue);
+  color: var(--very-light);
+  font-weight: 900;
+}
+
+.prompt__submit:hover {
+  filter: brightness(140%);
 }

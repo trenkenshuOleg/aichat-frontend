@@ -11,4 +11,3 @@ root.render(
     <App />
 );
 
-//reportWebVitals(console.log);
