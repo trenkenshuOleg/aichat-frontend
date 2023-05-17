@@ -1,5 +1,4 @@
 import React, { FormEvent, useEffect, useState, useRef} from 'react';
-import logo from './logo.svg';
 import './App.css';
 import { wsClient } from '../../ws/ws_client';
 import { ILogMessage, IMessage, messageEvent } from '../../ws/types';
@@ -24,7 +23,27 @@ function App() {
 
   useEffect(() => {
     setChatWindow(prev => [...prev])
-  }, [cursor])
+  }, [cursor]);
+
+  const sendMesage = () => {
+    if (userInput.length > 0 && !cursor) {
+        const newPhrase: ILogMessage = {
+        sender: 'Human',
+        message: userInput
+      }
+      const waitingForAi: ILogMessage = {
+        sender: 'Assistant',
+        message: '',
+      }
+      setChatWindow(prev => [...prev, newPhrase, waitingForAi])
+      const message: IMessage = {
+        event: messageEvent.prompt,
+        payload: newPhrase.message,
+      };
+      setUserInput('');
+      client.ws.send(JSON.stringify(message));
+    }
+  }
 
   return (
     <div className="app">
@@ -46,29 +65,14 @@ function App() {
             )}
           </div>
         </div>
-        <div className="bottom"></div>
       </section>
       <section className="prompt">
-        <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
-          setUserInput(event.currentTarget.value);
-        }} />
-        <button className="prompt__submit" type="button" onClick={ (event: FormEvent<HTMLButtonElement>) => {
-          const newPhrase: ILogMessage = {
-            sender: 'Human',
-            message: userInput
-          }
-          const waitingForAi: ILogMessage = {
-            sender: 'Assistant',
-            message: '',
-          }
-          setChatWindow(prev => [...prev, newPhrase, waitingForAi])
-          const message: IMessage = {
-            event: messageEvent.prompt,
-            payload: newPhrase.message,
-          };
-          client.ws.send(JSON.stringify(message));
-          setUserInput('');
-        }}>Send message</button>
+        <form className="prompt__form" onSubmit={ (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); sendMesage()} }>
+          <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
+            setUserInput(event.currentTarget.value);
+          }}/>
+          <button className="prompt__submit" type="button" onClick={ sendMesage }>Send message</button>
+        </form>
       </section>
     </div>
   );
