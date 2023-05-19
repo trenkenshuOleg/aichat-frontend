@@ -12,19 +12,29 @@ function App() {
   const client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
-  window.HTMLElement.prototype.scrollIntoView = () => {};
-
   useEffect(() => {
     bottomRef.current?.scroll({
-          top: bottomRef.current?.scrollHeight,
-          behavior: 'smooth',
-      });
-
+      top: bottomRef.current?.scrollHeight,
+      behavior: 'smooth',
+    });
   }, [chatWindow]);
 
   useEffect(() => {
     setChatWindow(prev => [...prev])
   }, [cursor]);
+
+  const checkAndSend = async (wsClient: wsClient, message: IMessage) => {
+    if(wsClient.ws.readyState !== WebSocket.OPEN) {
+      const reconnect = await wsClient.renew();
+        if(reconnect) {
+          wsClient.ws.send(JSON.stringify(message));
+        } else {
+          console.log('try later, unable to connect');
+        }
+    } else {
+      wsClient.ws.send(JSON.stringify(message));
+    }
+  }
 
   const sendMesage = () => {
     if (userInput.length > 0 && !cursor) {
@@ -42,7 +52,7 @@ function App() {
         payload: newPhrase.message,
       };
       setUserInput('');
-      client.ws.send(JSON.stringify(message));
+      checkAndSend(client, message);
     }
   }
 
@@ -55,7 +65,8 @@ function App() {
           payload: userId,
           type: techEvents.erase
         }
-        client.ws.send(JSON.stringify(erase));
+        //client.ws.send(JSON.stringify(erase));
+        checkAndSend(client, erase);
       }
     }
   }
@@ -70,7 +81,8 @@ function App() {
       const waitingForAi: ILogMessage = chatWindow[chatWindow.length - 1];
       waitingForAi.message = '';
       setChatWindow(prev => [...prev.slice(0, -1), waitingForAi]);
-      client.ws.send(JSON.stringify(regen));
+      //client.ws.send(JSON.stringify(regen));
+      checkAndSend(client, regen);
     }
   }
 
@@ -81,7 +93,8 @@ function App() {
         payload: '',
         type: techEvents.goOn
       }
-      client.ws.send(JSON.stringify(go));
+      //client.ws.send(JSON.stringify(go));
+      checkAndSend(client, go);
     }
   }
 

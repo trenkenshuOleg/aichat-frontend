@@ -11,6 +11,7 @@ export enum techEvents {
   erase = 'eraseSession',
   regenerate = 'regenerate',
   goOn = 'goOn',
+  ping = 'ping',
 }
 
 export enum streamEvents {

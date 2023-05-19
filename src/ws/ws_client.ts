@@ -1,15 +1,20 @@
 //import WebSocket from 'ws';
-import { ILogMessage, IMessage, messageEvent, streamEvents } from './types';
+import { ILogMessage, IMessage, messageEvent, streamEvents, techEvents } from './types';
 import { isSession } from '../helpers/helpers';
 import { Dispatch, SetStateAction } from 'react';
 
 // WebSocket client decorator
 
 export class wsClient {
-  private static single: wsClient;
+  private static single: wsClient | null;
+  private sChatWindow: Dispatch<SetStateAction<ILogMessage[]>>;
+  private sCursor: Dispatch<SetStateAction<boolean>>;
+  private sUrl: string;
   public ws: WebSocket;
   private constructor(serverUrl: string, setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>, setCursor: Dispatch<SetStateAction<boolean>>) {
-
+    this.sChatWindow = setChatWindow;
+    this.sCursor = setCursor;
+    this.sUrl = serverUrl;
     this.ws = new WebSocket(serverUrl);
 
     this.ws.onopen = (e: Event) => {
@@ -21,6 +26,16 @@ export class wsClient {
         payload: userId,
       }
       this.ws.send(JSON.stringify(auth));
+      setInterval(() => {
+        if (this.ws.readyState == WebSocket.OPEN) {
+          const ping: IMessage = {
+            event: messageEvent.tech,
+            payload: 'userId: ' + userId,
+            type: techEvents.ping,
+          }
+          this.ws.send(JSON.stringify(ping));
+        }
+      }, 10000);
     };
     this.ws.onmessage = (event: MessageEvent<string>) => {
       const message: IMessage = JSON.parse(event.data);
@@ -55,11 +70,31 @@ export class wsClient {
           }
       }
     }
+    this.ws.onclose = () => {
+    }
+  }
+  public renew = async () => {
+    wsClient.single = null;
+    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor);
+    return new Promise<boolean>(resolve => {
+      if (wsClient.single) {
+        const success = () => resolve(true);
+        const err = () => resolve(false);
+        wsClient.single.ws.addEventListener('open', () => {
+          success();
+          wsClient.single?.ws.removeEventListener('open', success);
+        });
+        wsClient.single.ws.addEventListener('error', () => {
+          err();
+          wsClient.single?.ws.removeEventListener('error', err);
+        });
+      }
+    })
   }
   public static singleInstance(serverUrl: string,
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
     setCursor: Dispatch<SetStateAction<boolean>>): wsClient {
-    if (typeof wsClient.single === 'undefined') {
+    if (typeof wsClient.single === 'undefined' || wsClient.single === null) {
       wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor)
     }
 
