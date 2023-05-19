@@ -1,5 +1,5 @@
 //import WebSocket from 'ws';
-import { ILogMessage, IMessage, messageEvent } from './types';
+import { ILogMessage, IMessage, messageEvent, streamEvents } from './types';
 import { isSession } from '../helpers/helpers';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -39,7 +39,7 @@ export class wsClient {
           break;
         case messageEvent.promptAnswer:
           setChatWindow(prev => {
-            if (message.type === 'text_stream') {
+            if (message.type === streamEvents.stream) {
               setCursor(true);
               const last = prev[prev.length - 1];
               const answer = last.sender === 'Human'
@@ -50,7 +50,7 @@ export class wsClient {
 
             return prev;
           });
-          if (message.type !== 'text_stream') {
+          if (message.type === streamEvents.end) {
             setCursor(false);
           }
       }

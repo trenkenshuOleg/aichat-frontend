@@ -7,10 +7,20 @@ export enum messageEvent {
   tech = 'technical',
 }
 
+export enum techEvents {
+  erase = 'eraseSession',
+  regenerate = 'regenerate',
+}
+
+export enum streamEvents {
+  stream = 'text_stream',
+  end = 'stream_end'
+}
+
 export interface IMessage {
   event: messageEvent;
   payload: ISession | string;
-  type?: 'text_stream' | 'stream_end'
+  type?: streamEvents | techEvents
 }
 
 export interface ILogMessage {

@@ -1,7 +1,8 @@
 import React, { FormEvent, useEffect, useState, useRef} from 'react';
 import './App.css';
 import { wsClient } from '../../ws/ws_client';
-import { ILogMessage, IMessage, messageEvent } from '../../ws/types';
+import { ILogMessage, IMessage, messageEvent, techEvents } from '../../ws/types';
+import { Session } from 'inspector';
 
 
 function App() {
@@ -27,7 +28,7 @@ function App() {
 
   const sendMesage = () => {
     if (userInput.length > 0 && !cursor) {
-        const newPhrase: ILogMessage = {
+      const newPhrase: ILogMessage = {
         sender: 'Human',
         message: userInput
       }
@@ -45,10 +46,40 @@ function App() {
     }
   }
 
+  const clearSession = () => {
+    if (!cursor) {
+      const userId = localStorage.getItem('userId');
+      if(userId) {
+        const erase: IMessage = {
+          event: messageEvent.tech,
+          payload: userId,
+          type: techEvents.erase
+        }
+        client.ws.send(JSON.stringify(erase));
+      }
+    }
+  }
+
+  const regenerate = () => {
+    if (!cursor) {
+      const regen: IMessage = {
+        event: messageEvent.tech,
+        payload: '',
+        type: techEvents.regenerate
+      }
+      const waitingForAi: ILogMessage = {
+        sender: 'Assistant',
+        message: '',
+      }
+      setChatWindow(prev => [...prev.slice(0, -1), waitingForAi]);
+      client.ws.send(JSON.stringify(regen));
+    }
+  }
+
   return (
     <div className="app">
-      <section className="chat-window">
-        <div className="chat-window_container" ref={bottomRef}>
+      <section className="app__block chat-window ">
+        <div className="chat-window__container" ref={bottomRef}>
           <div className="chat-window__chat" >
               {chatWindow.map( (el, index) =>
               (
@@ -66,12 +97,16 @@ function App() {
           </div>
         </div>
       </section>
-      <section className="prompt">
+      <section className="app__block tech">
+      <button className="tech__clear-session button" type="button" onClick={ clearSession }>Clear session</button>
+      <button className="tech__regenerate button" type="button" onClick={ regenerate }>Regenerate</button>
+      </section>
+      <section className="app__block prompt">
         <form className="prompt__form" onSubmit={ (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); sendMesage()} }>
           <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
             setUserInput(event.currentTarget.value);
           }}/>
-          <button className="prompt__submit" type="button" onClick={ sendMesage }>Send message</button>
+          <button className="prompt__submit button" type="button" onClick={ sendMesage }>Send message</button>
         </form>
       </section>
     </div>
