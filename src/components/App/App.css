@@ -106,6 +106,7 @@ body {
   width: fit-content;
   block-size: fit-content;
   box-shadow: var(--message-shadow);
+  line-height: 1.1rem;
 }
 
 .chat__message.assistant {
@@ -125,7 +126,7 @@ body {
 }
 
 .chat__message .fragment {
-  padding: 2px 0;
+  padding: 3px 0;
 }
 
 .assistant:last-of-type .fragment:last-of-type::after {
@@ -161,6 +162,7 @@ body {
   border-radius: 4px;
   transition: all 0.4s;
   filter: saturate(70%);
+  user-select: none;
 }
 
 .button:hover {
@@ -172,7 +174,7 @@ body {
   flex: 0 1 2vh;
   display: flex;
   align-self: center;
-  margin: 1rem 0 0 0;
+  margin: 1rem 0;
   flex-direction: row-reverse;
 }
 
@@ -180,15 +182,16 @@ body {
   background: var(--dark-red);
 }
 
-.tech__regenerate {
+.tech__regenerate,
+.tech__go-on {
   background: var(--dark-blue);
 }
 
 .prompt {
   flex: 0 1 3vh;
   position: relative;
-  margin: 1rem 0;
   padding: 1rem 0;
+  margin: 1rem 0 0 0;
   align-items: center;
   font-size: 0.9rem;
 }
@@ -229,10 +232,27 @@ body {
   .chat-window {
     margin-top: 2vh;
   }
+
   .app__block {
     width: 95%;
-    font-size: 0.75rem;
     border-radius: 12px;
+  }
+
+  .button {
+    flex: 1 1 auto;
+    margin: 16px;
+  }
+
+  .button:first-child {
+    margin: 16px 16px 8px 0px;
+  }
+
+  .button:last-child {
+    margin: 16px 0px 16px 16px;
+  }
+
+  .prompt__form .button:last-child {
+    margin: 8px 16px 0 16px;
   }
 
   .chat__message {
@@ -240,11 +260,19 @@ body {
     margin: 8px 0;
     width: fit-content;
   }
+
+  .prompt__form {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .prompt__text-field {
+    flex-basis: 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .app__block {
-    font-size: 0.63rem;
     line-height: 0.7rem;
     border-radius: 8px;
   }

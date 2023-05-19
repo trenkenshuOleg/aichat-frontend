@@ -67,12 +67,21 @@ function App() {
         payload: '',
         type: techEvents.regenerate
       }
-      const waitingForAi: ILogMessage = {
-        sender: 'Assistant',
-        message: '',
-      }
+      const waitingForAi: ILogMessage = chatWindow[chatWindow.length - 1];
+      waitingForAi.message = '';
       setChatWindow(prev => [...prev.slice(0, -1), waitingForAi]);
       client.ws.send(JSON.stringify(regen));
+    }
+  }
+
+  const goOn = () => {
+    if (!cursor) {
+      const go: IMessage = {
+        event: messageEvent.tech,
+        payload: '',
+        type: techEvents.goOn
+      }
+      client.ws.send(JSON.stringify(go));
     }
   }
 
@@ -97,10 +106,6 @@ function App() {
           </div>
         </div>
       </section>
-      <section className="app__block tech">
-      <button className="tech__clear-session button" type="button" onClick={ clearSession }>Clear session</button>
-      <button className="tech__regenerate button" type="button" onClick={ regenerate }>Regenerate</button>
-      </section>
       <section className="app__block prompt">
         <form className="prompt__form" onSubmit={ (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); sendMesage()} }>
           <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
@@ -108,6 +113,11 @@ function App() {
           }}/>
           <button className="prompt__submit button" type="button" onClick={ sendMesage }>Send message</button>
         </form>
+      </section>
+      <section className="app__block tech">
+        <button className="tech__clear-session button" type="button" onClick={ clearSession }>Clear session</button>
+        <button className="tech__regenerate button" type="button" onClick={ regenerate }>Regenerate</button>
+        <button className="tech__go-on button" type="button" onClick={ goOn }>Continue</button>
       </section>
     </div>
   );
