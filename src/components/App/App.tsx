@@ -2,12 +2,18 @@ import React, { FormEvent, useEffect, useState, useRef} from 'react';
 import './App.css';
 import { wsClient } from '../../ws/ws_client';
 import { ILogMessage, IMessage, messageEvent, techEvents } from '../../ws/types';
+import Loader from '../Loader/Loader';
+import { ILoader } from '../Loader/types';
 
 function App() {
   const [userInput, setUserInput] = useState('');
   const [chatWindow, setChatWindow] = useState<ILogMessage[]>([]);
-  const [cursor, setCursor] = useState<boolean>(false)
-  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor);
+  const [cursor, setCursor] = useState<boolean>(false);
+  const [loader, setLoader] = useState<ILoader>({
+    que: -1,
+    text: ''
+  });
+  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,15 +30,15 @@ function App() {
   const checkAndSend = async (wsClient: wsClient, message: IMessage) => {
     return new Promise((resolve) => {
       if(wsClient.ws.readyState !== WebSocket.OPEN) {
-            const NewWsClient = wsClient.renew();
-            NewWsClient.readyState.once( messageEvent.ready, () => {
-              NewWsClient.ws.send(JSON.stringify(message));
-              resolve(true);
-            })
-          } else {
-            wsClient.ws.send(JSON.stringify(message));
-            resolve(true);
-          }
+        const NewWsClient = wsClient.renew();
+        NewWsClient.readyState.once( messageEvent.ready, () => {
+          NewWsClient.ws.send(JSON.stringify(message));
+          resolve(true);
+        })
+      } else {
+        wsClient.ws.send(JSON.stringify(message));
+        resolve(true);
+      }
     });
   }
 
@@ -98,6 +104,7 @@ function App() {
 
   return (
     <div className="app">
+      <Loader que={loader.que} text={loader.text} />
       <section className="app__block chat-window ">
         <div className="chat-window__container" ref={bottomRef}>
           <div className="chat-window__chat" >

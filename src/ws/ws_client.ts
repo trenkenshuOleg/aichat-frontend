@@ -3,6 +3,7 @@ import { ILogMessage, IMessage, messageEvent, streamEvents, techEvents } from '.
 import { isSession } from '../helpers/helpers';
 import { Dispatch, SetStateAction } from 'react';
 import EventEmitter from 'events';
+import { ILoader } from '../components/Loader/types';
 
 // WebSocket client decorator
 
@@ -10,12 +11,18 @@ export class wsClient {
   private static single: wsClient | null;
   private sChatWindow: Dispatch<SetStateAction<ILogMessage[]>>;
   private sCursor: Dispatch<SetStateAction<boolean>>;
+  private sLoader: Dispatch<SetStateAction<ILoader>>;
   private sUrl: string;
   public readyState: EventEmitter;
   public ws: WebSocket;
-  private constructor(serverUrl: string, setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>, setCursor: Dispatch<SetStateAction<boolean>>) {
+  private constructor(
+    serverUrl: string,
+    setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
+    setCursor: Dispatch<SetStateAction<boolean>>,
+    setLoader: Dispatch<SetStateAction<ILoader>>) {
     this.sChatWindow = setChatWindow;
     this.sCursor = setCursor;
+    this.sLoader = setLoader;
     this.sUrl = serverUrl;
     this.readyState = new EventEmitter;
     this.ws = new WebSocket(serverUrl);
@@ -72,6 +79,9 @@ export class wsClient {
           }
           break;
         case messageEvent.queue:
+          setLoader({
+            que: Number(message.payload)
+          });
           console.log('your number in queue is ' + message.payload);
           break;
         case messageEvent.ready:
@@ -84,16 +94,17 @@ export class wsClient {
   }
   public static singleInstance(serverUrl: string,
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
-    setCursor: Dispatch<SetStateAction<boolean>>): wsClient {
+    setCursor: Dispatch<SetStateAction<boolean>>,
+    setLoader: Dispatch<SetStateAction<ILoader>>): wsClient {
     if (typeof wsClient.single === 'undefined' || wsClient.single === null) {
-      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor)
+      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor, setLoader)
     }
 
     return wsClient.single
   }
   public renew = () => {
     wsClient.single = null;
-    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor);
+    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor, this.sLoader);
 
     return wsClient.single;
   }
