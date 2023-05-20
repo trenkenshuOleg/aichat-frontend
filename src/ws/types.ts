@@ -5,6 +5,8 @@ export enum messageEvent {
   prompt = 'prompt',
   promptAnswer = 'promptAnswer',
   tech = 'technical',
+  queue = 'queue',
+  ready = 'ready',
 }
 
 export enum techEvents {

@@ -2,14 +2,12 @@ import React, { FormEvent, useEffect, useState, useRef} from 'react';
 import './App.css';
 import { wsClient } from '../../ws/ws_client';
 import { ILogMessage, IMessage, messageEvent, techEvents } from '../../ws/types';
-import { Session } from 'inspector';
-
 
 function App() {
   const [userInput, setUserInput] = useState('');
   const [chatWindow, setChatWindow] = useState<ILogMessage[]>([]);
   const [cursor, setCursor] = useState<boolean>(false)
-  const client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor);
+  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,19 +22,21 @@ function App() {
   }, [cursor]);
 
   const checkAndSend = async (wsClient: wsClient, message: IMessage) => {
-    if(wsClient.ws.readyState !== WebSocket.OPEN) {
-      const reconnect = await wsClient.renew();
-        if(reconnect) {
-          wsClient.ws.send(JSON.stringify(message));
-        } else {
-          console.log('try later, unable to connect');
-        }
-    } else {
-      wsClient.ws.send(JSON.stringify(message));
-    }
+    return new Promise((resolve) => {
+      if(wsClient.ws.readyState !== WebSocket.OPEN) {
+            const NewWsClient = wsClient.renew();
+            NewWsClient.readyState.once( messageEvent.ready, () => {
+              NewWsClient.ws.send(JSON.stringify(message));
+              resolve(true);
+            })
+          } else {
+            wsClient.ws.send(JSON.stringify(message));
+            resolve(true);
+          }
+    });
   }
 
-  const sendMesage = () => {
+  const sendMesage = async () => {
     if (userInput.length > 0 && !cursor) {
       const newPhrase: ILogMessage = {
         sender: 'Human',
@@ -46,13 +46,13 @@ function App() {
         sender: 'Assistant',
         message: '',
       }
-      setChatWindow(prev => [...prev, newPhrase, waitingForAi])
       const message: IMessage = {
         event: messageEvent.prompt,
         payload: newPhrase.message,
       };
       setUserInput('');
-      checkAndSend(client, message);
+      const success = checkAndSend(client, message);
+      (await success) && setChatWindow(prev => [...prev, newPhrase, waitingForAi])
     }
   }
 
@@ -65,13 +65,12 @@ function App() {
           payload: userId,
           type: techEvents.erase
         }
-        //client.ws.send(JSON.stringify(erase));
         checkAndSend(client, erase);
       }
     }
   }
 
-  const regenerate = () => {
+  const regenerate = async () => {
     if (!cursor) {
       const regen: IMessage = {
         event: messageEvent.tech,
@@ -80,9 +79,8 @@ function App() {
       }
       const waitingForAi: ILogMessage = chatWindow[chatWindow.length - 1];
       waitingForAi.message = '';
-      setChatWindow(prev => [...prev.slice(0, -1), waitingForAi]);
-      //client.ws.send(JSON.stringify(regen));
-      checkAndSend(client, regen);
+      const success =  checkAndSend(client, regen);
+        (await success) && setChatWindow(prev => [...prev.slice(0, -1), waitingForAi]);
     }
   }
 

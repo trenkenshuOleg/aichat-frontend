@@ -2,6 +2,7 @@
 import { ILogMessage, IMessage, messageEvent, streamEvents, techEvents } from './types';
 import { isSession } from '../helpers/helpers';
 import { Dispatch, SetStateAction } from 'react';
+import EventEmitter from 'events';
 
 // WebSocket client decorator
 
@@ -10,11 +11,13 @@ export class wsClient {
   private sChatWindow: Dispatch<SetStateAction<ILogMessage[]>>;
   private sCursor: Dispatch<SetStateAction<boolean>>;
   private sUrl: string;
+  public readyState: EventEmitter;
   public ws: WebSocket;
   private constructor(serverUrl: string, setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>, setCursor: Dispatch<SetStateAction<boolean>>) {
     this.sChatWindow = setChatWindow;
     this.sCursor = setCursor;
     this.sUrl = serverUrl;
+    this.readyState = new EventEmitter;
     this.ws = new WebSocket(serverUrl);
 
     this.ws.onopen = (e: Event) => {
@@ -50,7 +53,6 @@ export class wsClient {
           });
           if (isSession(message.payload))
             localStorage.setItem('userId', message.payload.userId);
-
           break;
         case messageEvent.promptAnswer:
           setChatWindow(prev => {
@@ -68,28 +70,17 @@ export class wsClient {
           if (message.type === streamEvents.end) {
             setCursor(false);
           }
+          break;
+        case messageEvent.queue:
+          console.log('your number in queue is ' + message.payload);
+          break;
+        case messageEvent.ready:
+          console.log('server connection is ready');
+          this.readyState.emit(messageEvent.ready);
       }
     }
     this.ws.onclose = () => {
     }
-  }
-  public renew = async () => {
-    wsClient.single = null;
-    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor);
-    return new Promise<boolean>(resolve => {
-      if (wsClient.single) {
-        const success = () => resolve(true);
-        const err = () => resolve(false);
-        wsClient.single.ws.addEventListener('open', () => {
-          success();
-          wsClient.single?.ws.removeEventListener('open', success);
-        });
-        wsClient.single.ws.addEventListener('error', () => {
-          err();
-          wsClient.single?.ws.removeEventListener('error', err);
-        });
-      }
-    })
   }
   public static singleInstance(serverUrl: string,
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
@@ -99,6 +90,15 @@ export class wsClient {
     }
 
     return wsClient.single
+  }
+  public renew = () => {
+    wsClient.single = null;
+    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor);
+
+    return wsClient.single;
+  }
+  public ready() {
+    return this.readyState
   }
 }
 
