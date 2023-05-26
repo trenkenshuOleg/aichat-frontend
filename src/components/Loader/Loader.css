@@ -9,6 +9,9 @@
   text-align: center;
   background: #fff;
 }
+.overlay.hidden {
+  transform: translate(-70vw, 0);
+}
 
 .info {
   font-size: 1rem;

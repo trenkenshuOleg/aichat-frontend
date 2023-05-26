@@ -6,14 +6,16 @@ const Loader: React.FC<ILoader> = (loaderProps: ILoader) => {
   const { que, text } = loaderProps;
   return (
     <>
-     { que >= 0 && (
-      <div className="overlay">
-          { !text ? (<div className="info">Your possition in que: { que === 0 ? `you're next` : que + 1 }</div>)
-          :  (<div className="info">{ text }</div>)
-          }
+      <div className={que >= 0 ? "overlay" : "overlay hidden"}>
+          <div className="info">
+            {
+            !text ? (<span>Your possition in que: { que === 0 ? `you're next` : que + 1 }</span>)
+            : (<span>{text}</span>)
+            }
+            </div>
+
           <div className="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
         </div>
-      )}
     </>
   )
 }

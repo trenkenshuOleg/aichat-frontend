@@ -13,7 +13,7 @@ function App() {
     que: -1,
     text: ''
   });
-  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader);
+  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader, setUserInput);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,6 +25,12 @@ function App() {
 
   useEffect(() => {
     setChatWindow(prev => [...prev])
+    if(cursor === true) {
+      setLoader({
+        que: -1,
+        text: ''
+      });
+    }
   }, [cursor]);
 
   const checkAndSend = async (wsClient: wsClient, message: IMessage) => {
@@ -77,7 +83,7 @@ function App() {
   }
 
   const regenerate = async () => {
-    if (!cursor) {
+    if (!cursor && chatWindow.length) {
       const regen: IMessage = {
         event: messageEvent.tech,
         payload: '',
@@ -91,13 +97,12 @@ function App() {
   }
 
   const goOn = () => {
-    if (!cursor) {
+    if (!cursor && chatWindow.length) {
       const go: IMessage = {
         event: messageEvent.tech,
         payload: '',
         type: techEvents.goOn
       }
-      //client.ws.send(JSON.stringify(go));
       checkAndSend(client, go);
     }
   }

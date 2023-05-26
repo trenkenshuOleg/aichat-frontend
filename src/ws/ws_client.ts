@@ -1,4 +1,3 @@
-//import WebSocket from 'ws';
 import { ILogMessage, IMessage, messageEvent, streamEvents, techEvents } from './types';
 import { isSession } from '../helpers/helpers';
 import { Dispatch, SetStateAction } from 'react';
@@ -12,6 +11,7 @@ export class wsClient {
   private sChatWindow: Dispatch<SetStateAction<ILogMessage[]>>;
   private sCursor: Dispatch<SetStateAction<boolean>>;
   private sLoader: Dispatch<SetStateAction<ILoader>>;
+  private sUserInput: Dispatch<SetStateAction<string>>;
   private sUrl: string;
   public readyState: EventEmitter;
   public ws: WebSocket;
@@ -19,10 +19,12 @@ export class wsClient {
     serverUrl: string,
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
     setCursor: Dispatch<SetStateAction<boolean>>,
-    setLoader: Dispatch<SetStateAction<ILoader>>) {
+    setLoader: Dispatch<SetStateAction<ILoader>>,
+    setUserInput: Dispatch<SetStateAction<string>>) {
     this.sChatWindow = setChatWindow;
     this.sCursor = setCursor;
     this.sLoader = setLoader;
+    this.sUserInput = setUserInput;
     this.sUrl = serverUrl;
     this.readyState = new EventEmitter;
     this.ws = new WebSocket(serverUrl);
@@ -58,8 +60,22 @@ export class wsClient {
 
             return prev
           });
-          if (isSession(message.payload))
+          if (isSession(message.payload)) {
+            if (!message.payload.sessionLog.length && !localStorage.getItem('userId')) {
+              setLoader({
+                que: 1,
+                text: 'Send the first message to start'
+              });
+              // setTimeout(() => {
+              //   setLoader({
+              //     que: -1,
+              //     text: ''
+              //   });
+              // }, 2500)
+              setUserInput('Hi! Tell about yourself please.')
+            }
             localStorage.setItem('userId', message.payload.userId);
+          }
           break;
         case messageEvent.promptAnswer:
           setChatWindow(prev => {
@@ -82,29 +98,27 @@ export class wsClient {
           setLoader({
             que: Number(message.payload)
           });
-          console.log('your number in queue is ' + message.payload);
           break;
         case messageEvent.ready:
           console.log('server connection is ready');
           this.readyState.emit(messageEvent.ready);
       }
     }
-    this.ws.onclose = () => {
-    }
   }
   public static singleInstance(serverUrl: string,
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
     setCursor: Dispatch<SetStateAction<boolean>>,
-    setLoader: Dispatch<SetStateAction<ILoader>>): wsClient {
+    setLoader: Dispatch<SetStateAction<ILoader>>,
+    setUserInput: Dispatch<SetStateAction<string>>): wsClient {
     if (typeof wsClient.single === 'undefined' || wsClient.single === null) {
-      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor, setLoader)
+      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor, setLoader, setUserInput)
     }
 
     return wsClient.single
   }
   public renew = () => {
     wsClient.single = null;
-    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor, this.sLoader);
+    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor, this.sLoader, this.sUserInput);
 
     return wsClient.single;
   }
