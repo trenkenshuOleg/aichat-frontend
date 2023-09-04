@@ -38,49 +38,19 @@ body {
 }
 
 .chat-window {
-  flex: 2 1 60vh;
+  flex: 2 1 60dvh;
   margin-top: 5vh;
-  overflow-y: hidden;
+  overflow: hidden;
+  position: relative;
   scrollbar-width: thin;
   scroll-behavior: smooth;
   scrollbar-color: var(--dark-blue) var(--light);
+  display: flex;
 }
 
 .chat-window__container {
   margin: 12px 0;
-  overflow-y: scroll;
-  overflow-y: overlay;
-  height: calc(100% - 24px);
-}
-
-.chat-window__container::before {
-  content: "";
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(
-    to bottom,
-    rgb(255, 255, 255) 0%,
-    rgba(255, 255, 255, 0.95) 10%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  position: absolute;
-  left: 0;
-  top: 12px;
-}
-
-.chat-window__container::after {
-  content: "";
-  width: 100%;
-  height: 10px;
-  background: linear-gradient(
-    to top,
-    rgb(255, 255, 255) 0%,
-    rgba(255, 255, 255, 0.95) 10%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  position: absolute;
-  left: 0;
-  bottom: 12px;
+  flex: 1;
 }
 
 .chat-window__container::-webkit-scrollbar {
@@ -99,6 +69,7 @@ body {
   flex-direction: column;
   padding: 2%;
   min-height: 100%;
+  height: auto;
 }
 
 .chat__message {
@@ -171,7 +142,7 @@ body {
 }
 
 .tech {
-  flex: 0 1 2vh;
+  flex: 0 1 2dvh;
   display: flex;
   align-self: center;
   margin: 1rem 0;
@@ -188,7 +159,7 @@ body {
 }
 
 .prompt {
-  flex: 0 1 3vh;
+  flex: 0 1 3dvh;
   position: relative;
   padding: 1rem 0;
   margin: 1rem 0 0 0;

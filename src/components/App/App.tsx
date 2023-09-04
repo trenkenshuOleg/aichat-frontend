@@ -17,6 +17,10 @@ function App() {
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
+    bottomRef.current?.setAttribute('style', 'overflow-y: scroll; -webkit-overflow-scrolling: touch');
+  }, []);
+
+  useEffect(() => {
     bottomRef.current?.scroll({
       top: bottomRef.current?.scrollHeight,
       behavior: 'smooth',
@@ -111,7 +115,11 @@ function App() {
     <div className="app">
       <Loader que={loader.que} text={loader.text} />
       <section className="app__block chat-window ">
-        <div className="chat-window__container" ref={bottomRef}>
+        <div className="chat-window__container" ref={bottomRef}
+          style={{
+            overflowY: 'scroll',
+            WebkitOverflowScrolling: "touch",
+          }}>
           <div className="chat-window__chat" >
               {chatWindow.map( (el, index) =>
               (

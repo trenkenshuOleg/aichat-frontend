@@ -10,7 +10,7 @@
   background: #fff;
 }
 .overlay.hidden {
-  transform: translate(-85vw, 0);
+  transform: translate(-115vw, 0);
 }
 
 .info {
