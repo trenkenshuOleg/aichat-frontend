@@ -9,11 +9,12 @@ function App() {
   const [userInput, setUserInput] = useState('');
   const [chatWindow, setChatWindow] = useState<ILogMessage[]>([]);
   const [cursor, setCursor] = useState<boolean>(false);
+  const [interfaceBlocked, setInterfaceBlocked] = useState<boolean>(false);
   const [loader, setLoader] = useState<ILoader>({
     que: -1,
     text: ''
   });
-  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader, setUserInput);
+  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader, setUserInput, setInterfaceBlocked);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ function App() {
   }
 
   const sendMesage = async () => {
+    setInterfaceBlocked(true);
     if (userInput.length > 0 && !cursor) {
       const newPhrase: ILogMessage = {
         sender: 'Human',
@@ -73,6 +75,7 @@ function App() {
   }
 
   const clearSession = () => {
+    setInterfaceBlocked(true);
     if (!cursor) {
       const userId = localStorage.getItem('userId');
       if(userId) {
@@ -87,6 +90,7 @@ function App() {
   }
 
   const regenerate = async () => {
+    setInterfaceBlocked(true);
     if (!cursor && chatWindow.length) {
       const regen: IMessage = {
         event: messageEvent.tech,
@@ -101,6 +105,7 @@ function App() {
   }
 
   const goOn = () => {
+    setInterfaceBlocked(true);
     if (!cursor && chatWindow.length) {
       const go: IMessage = {
         event: messageEvent.tech,
@@ -138,17 +143,46 @@ function App() {
         </div>
       </section>
       <section className="app__block prompt">
-        <form className="prompt__form" onSubmit={ (event: FormEvent<HTMLFormElement>) => {event.preventDefault(); sendMesage()} }>
-          <input className="prompt__text-field" type="text" value={userInput} onChange={ (event: FormEvent<HTMLInputElement>) => {
-            setUserInput(event.currentTarget.value);
-          }}/>
-          <button className="prompt__submit button" type="button" onClick={ sendMesage }>Send message</button>
+        <form
+          className="prompt__form"
+          onSubmit={ (event: FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            sendMesage();
+          }}>
+          <input className="prompt__text-field"
+            type="text"
+            value={userInput}
+            onChange={ (event: FormEvent<HTMLInputElement>) => {
+              setUserInput(event.currentTarget.value);
+            }}
+          />
+          <button
+            className={'prompt__submit button ' + (interfaceBlocked ? 'button__inactive' : '')}
+            type="button"
+            onClick={ sendMesage }
+          >
+            Send message</button>
         </form>
       </section>
       <section className="app__block tech">
-        <button className="tech__clear-session button" type="button" onClick={ clearSession }>Clear session</button>
-        <button className="tech__regenerate button" type="button" onClick={ regenerate }>Regenerate</button>
-        <button className="tech__go-on button" type="button" onClick={ goOn }>Continue</button>
+        <button
+          className={'tech__clear-session button ' + (interfaceBlocked ? 'button__inactive' : '')}
+          type="button"
+          onClick={ clearSession }
+        >
+          Clear session</button>
+        <button
+          className={'tech__regenerate button ' + (interfaceBlocked ? 'button__inactive' : '')}
+          type="button"
+          onClick={ regenerate }
+        >
+          Regenerate</button>
+        <button
+          className={'tech__go-on button ' + (interfaceBlocked ? 'button__inactive' : '')}
+          type="button"
+          onClick={ goOn }
+        >
+          Continue</button>
       </section>
     </div>
   );

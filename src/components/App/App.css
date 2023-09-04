@@ -1,6 +1,7 @@
 :root {
   --dark-blue: #026694;
   --dark-red: #640000;
+  --dark-grey: #aaa;
   --very-light: #fff;
   --light: #ffffff;
   --ai-cursor: "▌";
@@ -141,6 +142,11 @@ body {
   filter: saturate(120%);
 }
 
+.button.button__inactive:hover {
+  filter: brightness(100%);
+  filter: saturate(70%);
+}
+
 .tech {
   flex: 0 1 2dvh;
   display: flex;
@@ -156,6 +162,11 @@ body {
 .tech__regenerate,
 .tech__go-on {
   background: var(--dark-blue);
+}
+
+.button.button__inactive {
+  background: var(--dark-grey);
+  cursor: default;
 }
 
 .prompt {

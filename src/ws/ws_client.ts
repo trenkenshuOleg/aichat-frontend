@@ -12,6 +12,7 @@ export class wsClient {
   private sCursor: Dispatch<SetStateAction<boolean>>;
   private sLoader: Dispatch<SetStateAction<ILoader>>;
   private sUserInput: Dispatch<SetStateAction<string>>;
+  private sInterfaceBlocked: Dispatch<SetStateAction<boolean>>;
   private sUrl: string;
   public readyState: EventEmitter;
   public ws: WebSocket;
@@ -20,11 +21,13 @@ export class wsClient {
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
     setCursor: Dispatch<SetStateAction<boolean>>,
     setLoader: Dispatch<SetStateAction<ILoader>>,
-    setUserInput: Dispatch<SetStateAction<string>>) {
+    setUserInput: Dispatch<SetStateAction<string>>,
+    setInterfaceBlocked: Dispatch<SetStateAction<boolean>>) {
     this.sChatWindow = setChatWindow;
     this.sCursor = setCursor;
     this.sLoader = setLoader;
     this.sUserInput = setUserInput;
+    this.sInterfaceBlocked = setInterfaceBlocked;
     this.sUrl = serverUrl;
     this.readyState = new EventEmitter;
     this.ws = new WebSocket(serverUrl);
@@ -92,6 +95,7 @@ export class wsClient {
           });
           if (message.type === streamEvents.end) {
             setCursor(false);
+            setInterfaceBlocked(false);
           }
           break;
         case messageEvent.queue:
@@ -109,16 +113,17 @@ export class wsClient {
     setChatWindow: Dispatch<SetStateAction<ILogMessage[]>>,
     setCursor: Dispatch<SetStateAction<boolean>>,
     setLoader: Dispatch<SetStateAction<ILoader>>,
-    setUserInput: Dispatch<SetStateAction<string>>): wsClient {
+    setUserInput: Dispatch<SetStateAction<string>>,
+    setInterfaceBlocked: Dispatch<SetStateAction<boolean>>,): wsClient {
     if (typeof wsClient.single === 'undefined' || wsClient.single === null) {
-      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor, setLoader, setUserInput)
+      wsClient.single = new wsClient(serverUrl, setChatWindow, setCursor, setLoader, setUserInput, setInterfaceBlocked)
     }
 
     return wsClient.single
   }
   public renew = () => {
     wsClient.single = null;
-    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor, this.sLoader, this.sUserInput);
+    wsClient.single = wsClient.singleInstance(this.sUrl, this.sChatWindow, this.sCursor, this.sLoader, this.sUserInput, this.sInterfaceBlocked);
 
     return wsClient.single;
   }
