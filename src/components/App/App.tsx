@@ -4,6 +4,7 @@ import { wsClient } from '../../ws/ws_client';
 import { ILogMessage, IMessage, messageEvent, techEvents } from '../../ws/types';
 import Loader from '../Loader/Loader';
 import { ILoader } from '../Loader/types';
+import States from '../../ws/fe_states';
 
 function App() {
   const [userInput, setUserInput] = useState('');
@@ -14,7 +15,8 @@ function App() {
     que: -1,
     text: ''
   });
-  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), setChatWindow, setCursor, setLoader, setUserInput, setInterfaceBlocked);
+  const states = new States(setChatWindow, setCursor, setLoader, setUserInput, setInterfaceBlocked)
+  let client = wsClient.singleInstance(String(process.env.REACT_APP_WS_SERVER), states);
   const bottomRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
