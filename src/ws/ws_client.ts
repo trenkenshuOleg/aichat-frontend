@@ -8,7 +8,7 @@ import States from './fe_states';
 // WebSocket client decorator
 
 export class wsClient {
-  private static single: wsClient | null;
+  private static single: wsClient | null = null;
   private states: States;
   private sUrl: string;
   public readyState: EventEmitter;
@@ -50,18 +50,13 @@ export class wsClient {
 
             return prev
           });
+          this.states.sInterfaceBlocked(false)
           if (isSession(message.payload)) {
             if (!message.payload.sessionLog.length && !localStorage.getItem('userId')) {
               this.states.sLoader({
                 que: 1,
                 text: 'Send the first message to start'
               });
-              // setTimeout(() => {
-              //   setLoader({
-              //     que: -1,
-              //     text: ''
-              //   });
-              // }, 2500)
               this.states.sUserInput('Hi! Tell about yourself please.')
             }
             localStorage.setItem('userId', message.payload.userId);
@@ -97,7 +92,7 @@ export class wsClient {
     }
   }
   public static singleInstance(serverUrl: string, states: States): wsClient {
-    if (typeof wsClient.single === 'undefined' || wsClient.single === null) {
+    if (!wsClient.single) {
       wsClient.single = new wsClient(serverUrl, states)
     }
 

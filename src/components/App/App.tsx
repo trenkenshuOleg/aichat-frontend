@@ -56,8 +56,8 @@ function App() {
   }
 
   const sendMesage = async () => {
-    setInterfaceBlocked(true);
     if (userInput.length > 0 && !cursor) {
+      setInterfaceBlocked(true);
       const newPhrase: ILogMessage = {
         sender: 'Human',
         message: userInput
@@ -92,8 +92,8 @@ function App() {
   }
 
   const regenerate = async () => {
-    setInterfaceBlocked(true);
     if (!cursor && chatWindow.length) {
+      setInterfaceBlocked(true);
       const regen: IMessage = {
         event: messageEvent.tech,
         payload: '',
@@ -107,8 +107,8 @@ function App() {
   }
 
   const goOn = () => {
-    setInterfaceBlocked(true);
     if (!cursor && chatWindow.length) {
+      setInterfaceBlocked(true);
       const go: IMessage = {
         event: messageEvent.tech,
         payload: '',
@@ -147,6 +147,7 @@ function App() {
       <section className="app__block prompt">
         <form
           className="prompt__form"
+          id="request_form"
           onSubmit={ (event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             sendMesage();
