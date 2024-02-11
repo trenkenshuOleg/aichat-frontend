@@ -142,7 +142,12 @@ body {
   filter: saturate(120%);
 }
 
-.button.button__inactive:hover {
+.app__block_inactive .button {
+  background: var(--dark-grey);
+  cursor: default;
+}
+
+.app__block_inactive .button:hover {
   filter: brightness(100%);
   filter: saturate(70%);
 }
@@ -162,11 +167,6 @@ body {
 .tech__regenerate,
 .tech__go-on {
   background: var(--dark-blue);
-}
-
-.button.button__inactive {
-  background: var(--dark-grey);
-  cursor: default;
 }
 
 .prompt {

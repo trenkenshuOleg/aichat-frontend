@@ -119,15 +119,15 @@ function App() {
   }
 
   return (
-    <div className="app">
+    <div className='app'>
       <Loader que={loader.que} text={loader.text} />
-      <section className="app__block chat-window ">
-        <div className="chat-window__container" ref={bottomRef}
+      <section className='app__block chat-window '>
+        <div className='chat-window__container' ref={bottomRef}
           style={{
             overflowY: 'scroll',
-            WebkitOverflowScrolling: "touch",
+            WebkitOverflowScrolling: 'touch',
           }}>
-          <div className="chat-window__chat" >
+          <div className='chat-window__chat' >
               {chatWindow.map( (el, index) =>
               (
                 <div className={el.sender.toLowerCase() + ' chat__message'} key={index}>
@@ -144,45 +144,45 @@ function App() {
           </div>
         </div>
       </section>
-      <section className="app__block prompt">
+      <section className={'app__block prompt ' + (interfaceBlocked ? 'app__block_inactive' : '')}>
         <form
-          className="prompt__form"
-          id="request_form"
+          className='prompt__form'
+          id='request_form'
           onSubmit={ (event: FormEvent<HTMLFormElement>) => {
             event.preventDefault();
             sendMesage();
           }}>
-          <input className="prompt__text-field"
-            type="text"
+          <input className='prompt__text-field'
+            type='text'
             value={userInput}
             onChange={ (event: FormEvent<HTMLInputElement>) => {
               setUserInput(event.currentTarget.value);
             }}
           />
           <button
-            className={'prompt__submit button ' + (interfaceBlocked ? 'button__inactive' : '')}
-            type="button"
+            className='prompt__submit button'
+            type='button'
             onClick={ sendMesage }
           >
             Send message</button>
         </form>
       </section>
-      <section className="app__block tech">
+      <section className={'app__block tech ' + (interfaceBlocked ? 'app__block_inactive' : '')}>
         <button
-          className={'tech__clear-session button ' + (interfaceBlocked ? 'button__inactive' : '')}
-          type="button"
+          className='tech__clear-session button'
+          type='button'
           onClick={ clearSession }
         >
           Clear session</button>
         <button
-          className={'tech__regenerate button ' + (interfaceBlocked ? 'button__inactive' : '')}
-          type="button"
+          className='tech__regenerate button'
+          type='button'
           onClick={ regenerate }
         >
           Regenerate</button>
         <button
-          className={'tech__go-on button ' + (interfaceBlocked ? 'button__inactive' : '')}
-          type="button"
+          className='tech__go-on button'
+          type='button'
           onClick={ goOn }
         >
           Continue</button>
